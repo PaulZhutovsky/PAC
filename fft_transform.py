@@ -16,6 +16,7 @@ import os
 import os.path as osp
 from glob import glob
 from sys import stdout
+from time import time
 
 from docopt import docopt
 
@@ -48,11 +49,12 @@ def calc_psd(X_freq):
 
 
 def run(subject_files, save_folder):
-
+    t1 = 0.
+    t2 = 0.
     for id_file, subj_file in enumerate(subject_files):
-        stdout.write('{}/{}\r'.format(id_file + 1, len(subject_files)))
+        stdout.write('{}/{} {:.2f}s\r'.format(id_file + 1, len(subject_files), t2 - t1))
         stdout.flush()
-
+        t1 = time()
         X = np.load(subj_file)
         X_fft = calc_fft(X)
 
@@ -61,6 +63,7 @@ def run(subject_files, save_folder):
         save_file = osp.basename(subj_file)
         save_file = save_file.rpartition('.')[0] + '_psd' + '.npy'
         np.save(osp.join(save_folder, save_file), power_spectral_density)
+        t2 = time()
 
 
 def main(args):
