@@ -4,11 +4,14 @@ The FFT will be performed after the mean of the data (across time) is rmoved and
 of 2 length.
 
 Usage:
-    fft_transform FOLDER_DATA SAVE_LOCATION
+    fft_transform [--relative] FOLDER_DATA SAVE_LOCATION
 
 Arguments:
     FOLDER_DATA     Folder where the data is located
     SAVE_LOCATION   Where to save the power spectra to (folder, will be created if not existing)
+
+Options:
+    --relative      Whether to scale the power spectrum density or not (will not be done by default)
 """
 
 import numpy as np
@@ -52,7 +55,7 @@ def calc_psd(X_freq, relative=True):
     return psd
 
 
-def run(subject_files, save_folder):
+def run(subject_files, save_folder, scale_psd):
     t1 = 0.
     t2 = 0.
     for id_file, subj_file in enumerate(subject_files):
@@ -62,7 +65,7 @@ def run(subject_files, save_folder):
         X = np.load(subj_file)
         X_fft = calc_fft(X)
 
-        power_spectral_density = calc_psd(X_fft)
+        power_spectral_density = calc_psd(X_fft, relative=scale_psd)
 
         save_file = osp.basename(subj_file)
         save_file = save_file.rpartition('.')[0] + '_psd' + '.npy'
@@ -73,9 +76,10 @@ def run(subject_files, save_folder):
 def main(args):
     data_folder = args['FOLDER_DATA']
     save_folder = args['SAVE_LOCATION']
+    scale_psd = args['--relative']
     ensure_folder(save_folder)
     subject_files = get_subject_file_path(data_folder)
-    run(subject_files, save_folder)
+    run(subject_files, save_folder, scale_psd)
 
 
 if __name__ == '__main__':
