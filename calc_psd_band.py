@@ -24,18 +24,18 @@ from sys import stdout
 from time import time
 
 
-def calc_freq(n, TR):
+def calc_freq(n, tr):
     # again only return the positive frequency
-    return np.fft.fftfreq(n, d=TR)[1:n/2]
+    return np.fft.fftfreq(n, d=tr)[1:n / 2]
 
 
-def normalize_psd(X_psd):
-    return X_psd/(X_psd.sum(axis=1)[:, np.newaxis] + 0.00001)
+def normalize_psd(psd):
+    return psd / (psd.sum(axis=1)[:, np.newaxis] + 0.00001)
 
 
-def calculate_power_in_band(X_psd, freq, low_thresh, high_thresh):
+def calculate_power_in_band(psd, freq, low_thresh, high_thresh):
     band_roi = (freq >= low_thresh) & (freq < high_thresh)
-    return X_psd[:, band_roi].sum(axis=1)
+    return psd[:, band_roi].sum(axis=1)
 
 
 def run(subject_files, save_folder, desc_file_df, low_thresh, high_thresh, scale_psd):
