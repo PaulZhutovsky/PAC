@@ -44,8 +44,12 @@ def calc_fft(X_time):
     return X_freq[:, 1:n/2]
 
 
-def calc_psd(X_freq):
-    return np.abs(X_freq)**2
+def calc_psd(X_freq, relative=True):
+    psd = np.abs(X_freq)**2
+
+    if relative:
+        psd /=(psd.sum(axis=1)[:, np.newaxis] + 0.0001)
+    return psd
 
 
 def run(subject_files, save_folder):
