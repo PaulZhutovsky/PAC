@@ -36,6 +36,7 @@ def get_subject_file_path(folder_path):
 
 def calc_fft(X_time):
     n = int(np.log2(X_time.shape[1]) + 1)
+    X_time = X_time - X_time.mean(axis=1)[:, np.newaxis]
     X_freq = np.fft.fft(X_time, n=n, axis=-1)
 
     # take only the positive frequencies, see numpy description of fft
