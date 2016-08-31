@@ -18,7 +18,7 @@ Options:
 import os.path as osp
 import numpy as np
 import pandas as pd
-from fft_transform import ensure_folder, get_subject_file_path
+from fft_transform import ensure_folder, get_subject_file_path, normalize_psd
 from docopt import docopt
 from sys import stdout
 from time import time
@@ -27,10 +27,6 @@ from time import time
 def calc_freq(n, tr):
     # again only return the positive frequency
     return np.fft.fftfreq(n, d=tr)[1:n / 2]
-
-
-def normalize_psd(psd):
-    return psd / (psd.sum(axis=1)[:, np.newaxis] + 0.00001)
 
 
 def calculate_power_in_band(psd, freq, low_thresh, high_thresh):

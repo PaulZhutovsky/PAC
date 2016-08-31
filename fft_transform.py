@@ -47,12 +47,13 @@ def calc_fft(X_time):
     return X_freq[:, 1:n/2]
 
 
-def calc_psd(X_freq, relative=True):
+def calc_psd(X_freq):
     psd = np.abs(X_freq)**2
-
-    if relative:
-        psd /=(psd.sum(axis=1)[:, np.newaxis] + 0.0001)
     return psd
+
+
+def normalize_psd(psd):
+    return psd / (psd.sum(axis=1)[:, np.newaxis] + 0.00001)
 
 
 def run(subject_files, save_folder, scale_psd):
@@ -65,7 +66,10 @@ def run(subject_files, save_folder, scale_psd):
         X = np.load(subj_file)
         X_fft = calc_fft(X)
 
-        power_spectral_density = calc_psd(X_fft, relative=scale_psd)
+        power_spectral_density = calc_psd(X_fft)
+
+        if scale_psd:
+            normalize_psd(power_spectral_density)
 
         save_file = osp.basename(subj_file)
         save_file = save_file.rpartition('.')[0] + '_psd' + '.npy'
