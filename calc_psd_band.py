@@ -11,7 +11,7 @@ Arguments:
 
 Options:
     --relative              depending on whether the psd is already scaled or not you can scale it here again
-    --low_thr=<LOW_THR>     the lower threshold for band in interest [default: 0.005]
+    --low_thr=<LOW_THR>     the lower threshold for band in interest [default: 0.0078]
     --high_thr=<HIGH_THR>   the higher threshold for band in interest [default: 0.01]
 """
 
