@@ -37,6 +37,8 @@ def run(subject_files, save_loc, num_voxels=228483):
 
     for id_subj, subject_file in enumerate(subject_files):
         stdout.write('{}/{} {:.2f}\r'.format(id_subj + 1, len(subject_files), t2 - t1))
+        stdout.flush()
+        
         t1 = time()
         X = np.load(subject_file)
 
