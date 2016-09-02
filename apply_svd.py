@@ -35,7 +35,6 @@ def run(subject_files, save_folder, svd_file, n_feats):
 
         for id_M in xrange(n_feats):
             pattern = np.outer(U[:, id_M], V[id_M]) * s[id_M]
-            import ipdb; ipdb.set_trace()
             features[id_subject, id_M] = (X_subj * pattern).sum()
         t2 = time()
 
