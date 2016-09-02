@@ -26,7 +26,7 @@ def run(subject_files, save_folder, chosen_subj, num_voxel=15176):
     N = chosen_subj.size
 
     for id_subj, subject_file in enumerate(subject_files):
-        if np.any(int(get_subject_id(subject_file)) == chosen_subj):
+        if get_subject_id(subject_file).isdigit() and np.any(int(get_subject_id(subject_file)) == chosen_subj):
             stdout.write('{}/{} {:.2f}\r'.format(id_subj + 1, len(subject_files), t2 - t1))
             stdout.flush()
             t1 = time()
