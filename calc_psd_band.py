@@ -11,8 +11,8 @@ Arguments:
 
 Options:
     --relative              depending on whether the psd is already scaled or not you can scale it here again
-    --low_thr=<LOW_THR>     the lower threshold for band in interest [default: 0.0078]
-    --high_thr=<HIGH_THR>   the higher threshold for band in interest [default: 0.01]
+    --low_thr=<LOW_THR>     the lower threshold for band in interest [default: 0.01]
+    --high_thr=<HIGH_THR>   the higher threshold for band in interest [default: 0.1]
 """
 
 import os.path as osp
@@ -30,20 +30,21 @@ def calc_freq(n, tr):
 
 
 def calculate_power_in_band(psd, freq, low_thresh, high_thresh):
-    band_roi = (freq >= low_thresh) & (freq < high_thresh)
+    band_roi = (freq >= low_thresh) & (freq <= high_thresh)
     return psd[:, band_roi].sum(axis=1)
 
 
-def run(subject_files, save_folder, desc_file_df, low_thresh, high_thresh, scale_psd):
+def run(subject_files, save_folder, desc_file_df, low_thresh, high_thresh, scale_psd, num_voxels=228483):
     t1 = 0.
     t2 = 0.
+    X_band = np.zeros((num_voxels, len(subject_files)))
     for id_file, subj_file in enumerate(subject_files):
         stdout.write('{}/{} {:.2f}s\r'.format(id_file + 1, len(subject_files), t2 - t1))
         stdout.flush()
 
         t1 = time()
         X_psd = np.load(subj_file)
-        subj_id = int(osp.basename(subj_file).partition('.')[0].partition('_')[0])
+        subj_id = int(get_subject_id(subj_file))
         TR_subj = float(desc_file_df.loc[desc_file_df.subject_id == subj_id, 'subject_sites_TR'])
 
         # a bit hacky.. we need to get the original n (with the padding)
@@ -52,12 +53,13 @@ def run(subject_files, save_folder, desc_file_df, low_thresh, high_thresh, scale
         if scale_psd:
             X_psd = normalize_psd(X_psd)
 
-        X_band = calculate_power_in_band(X_psd, freq, low_thresh, high_thresh)
-
-        save_file = osp.basename(subj_file)
-        save_file = save_file.rpartition('.')[0] + '_band' + '.npy'
-        np.save(osp.join(save_folder, save_file), X_band)
+        X_band[:, id_file] = calculate_power_in_band(X_psd, freq, low_thresh, high_thresh)
         t2 = time()
+    np.save(osp.join(save_folder, 'psd_band.npy'), X_band)
+
+
+def get_subject_id(subj_file):
+    return osp.basename(subj_file).partition('.')[0].partition('_')[0]
 
 
 def get_desc_file(desc_file):

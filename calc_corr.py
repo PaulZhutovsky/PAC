@@ -1,59 +1,49 @@
 """
-Calculates correlations across the time-series voxels of a matrix.
+Calculates correlations across the time-series voxels.
 
 Usage:
-    calc_corr [--step=<STEP>] DATA_MATRIX SAVE_LOCATION
+    calc_corr  DATA_FOLDER SAVE_LOCATION
 
 Arguments:
-    DATA_MATRIX     Path to the matrix which will be used to calculate the correlations
+    DATA_FOLDER     Path to the data folder
     SAVE_LOCATION   Where to save the result to
-
-Options:
-    --step=<STEP>   How many correlations should be calculated per one step [default: 500]
 """
 import numpy as np
 from docopt import docopt
+from fft_transform import ensure_folder, get_subject_file_path
+from calc_psd_band import get_subject_id
 from time import time
 from sys import stdout
+import os.path as osp
 
 
-def run(data_location, save_folder, step_size=500):
-    X = np.load(data_location)
-
-    n_time = X.shape[1]
-
-    X = X - X.mean(axis=1)[:, np.newaxis]
-    X_var = np.sqrt(X.var(axis=1) * n_time)
-
-    calc_correlations(X, X_var, step_size)
-
-
-def calc_correlations(X, X_var, step_size):
+def run(subject_files, save_folder, num_voxel=15176):
     t1 = 0.
     t2 = 0.
-    id_run = 1
-    n_voxel = X.shape[0]
-    num_iter = int(np.ceil(n_voxel/step_size))
-    r = []
-
-    for i in xrange(0, n_voxel, step_size):
-        stdout.write('{}/{} {:.2f} \r'.format(id_run, num_iter, t2- t1))
+    X_average = np.zeros((num_voxel, num_voxel))
+    N = float(len(subject_files))
+    for id_subj, subject_file in enumerate(subject_files):
+        stdout.write('{}/{} {:.2f}\r'.format(id_subj + 1, len(subject_files), t2 - t1))
         stdout.flush()
-
         t1 = time()
-        tmp = np.triu(np.tensordot(X[i:i + step_size], X[i:], axes=(1, 1)) / (np.outer(X_var[i: i + step_size], X_var[i:])
-                                                                                       + 0.00001))
-        r.append(tmp[tmp!=0])
+        X = np.load(subject_file)
+        corr_mat = np.corrcoef(X, rowvar=True)
+        X_average += (corr_mat/N)
 
-        id_run += 1
+        subj_id = get_subject_id(subject_file)
+
+        save_subj = subj_id + '_corr.npy'
+        np.save(osp.join(save_folder, save_subj), corr_mat)
         t2 = time()
-    return r
+    print 'save average'
+    np.save(osp.join(save_folder, 'average_corr.npy'), X_average)
 
 def main(args):
-    data_location = args['DATA_MATRIX']
+    data_location = args['DATA_FOLDER']
     save_folder = args['SAVE_LOCATION']
-    step_size = int(args['--step'])
-    run(data_location, save_folder, step_size)
+    ensure_folder(save_folder)
+    subject_files = get_subject_file_path(data_location)
+    run(subject_files, save_folder)
 
 
 if __name__ == '__main__':
