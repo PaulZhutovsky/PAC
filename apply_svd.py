@@ -32,10 +32,11 @@ def run(subject_files, save_folder, svd_file, n_feats):
         stdout.flush()
         t1 = time()
         X_subj = np.load(subject_file)
+        x_subj = X_subj.ravel()
 
         for id_M in xrange(n_feats):
             pattern = np.outer(U[:, id_M], V[id_M]) * s[id_M]
-            features[id_subject, id_M] = (X_subj * pattern).sum()
+            features[id_subject, id_M] = pattern.ravel().dot(x_subj)
         t2 = time()
 
     np.save(osp.join(save_folder, 'svd_features.npy'), features)
